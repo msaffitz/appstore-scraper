@@ -36,12 +36,13 @@ http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296
 	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_FAVORABLE
 
 	reviews = []
-	apps.each_value do |app|
-		stores.each do |store|
-			scraper.set_store(store)
-			reviews << scraper.fetch_reviews(app)
+	begin
+		apps.each_value do |app|
+			stores.each do |store|
+				scraper.set_store(store)
+				reviews << scraper.fetch_reviews(app)
+			end
 		end
+	rescue => e
+		puts e.message
 	end
-
-	pp reviews
-
