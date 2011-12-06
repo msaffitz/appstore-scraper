@@ -13,13 +13,20 @@
 #   relevant post: http://igmus.org/2008/09/fetching-app-store-reviews
 #
 # TODO: spider additional review pages
-#
+# TODO: add option for latest version only: &onlyLatestVersion=true
 
 require 'rubygems'
 require 'hpricot'
 require 'httparty'
 
 class AppstoreScrapper
+
+	module SortOrders
+		MOST_HELPFUL = 4
+		MOST_FAVORABLE = 2
+		MOST_CRITICAL = 3
+		MOST_RECENT = 0
+	end
 
 	USER_AGENT_HEADER = 'iTunes/9.2 (Macintosh; U; Mac OS X 10.6'
 	TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
@@ -28,8 +35,8 @@ class AppstoreScrapper
 	DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :should_translate
-	
+	attr_accessor :native_language, :should_translate, :sort_order
+
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
 			{ :name => 'Argentina',            :id => 143505, :language => 'es'    },
@@ -114,6 +121,7 @@ class AppstoreScrapper
 		@store = DEFAULT_STORE
 		@native_language = DEFAULT_NATIVE_LANGUAGE
 		@should_translate = true
+		@sort_order = SortOrders::MOST_RECENT
 	end
 
 	def store
@@ -123,7 +131,7 @@ class AppstoreScrapper
 	def store=(store_name)
 		store_hash = @@stores.select{ |s| s[:name] == store_name }.first
 		if store_hash.nil?
-			abort("App Store \"#{store_name}\" Does Not Exist")
+			abort("App Store \"#{store_name}\" Not In List, Check Spelling")
 		else
 			@store = store_hash
 		end
@@ -149,7 +157,7 @@ class AppstoreScrapper
 	
 	def fetch_xml(software_id)
 		raw_xml = %x[curl -s -A "#{USER_AGENT_HEADER}" -H "X-Apple-Store-Front: #{@store[:id]}-1" \
-					"#{APP_STORE_URL}?id=#{software_id}&pageNumber=0&sortOrdering=1&type=#{STORE_TYPE}" \
+					"#{APP_STORE_URL}?id=#{software_id}&pageNumber=0&sortOrdering=#{@sort_order}&type=#{STORE_TYPE}" \
 					| xmllint --format --recover - 2>/dev/null]
 		raise 'xml request failed' if $? != 0
 		xml = Hpricot.XML(raw_xml)
