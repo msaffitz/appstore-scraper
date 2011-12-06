@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 #
 # appstore_reviews
 #
@@ -23,7 +21,6 @@ require 'httparty'
 
 class AppstoreScrapper
 
-	DEBUG = false
 	USER_AGENT_HEADER = 'iTunes/9.2 (Macintosh; U; Mac OS X 10.6'
 	TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
 	APP_STORE_URL = 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewContentsUserReviews'
@@ -31,7 +28,7 @@ class AppstoreScrapper
 	DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :translate
+	attr_accessor :native_language, :should_translate
 	
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -111,36 +108,46 @@ class AppstoreScrapper
 			{ :name => 'Nicaragua',            :id => 143512, :language => 'es'    },
 			{ :name => 'Paraguay',             :id => 143513, :language => 'es'    },
 			{ :name => 'Uruguay',              :id => 143514, :language => 'es'    }
-		]
+	]
 	
 	def initialize 
-		set_store(DEFAULT_STORE)
+		@store = DEFAULT_STORE
 		@native_language = DEFAULT_NATIVE_LANGUAGE
-		@translate = true
+		@should_translate = true
 	end
 
-	def set_store(name)
-		if ! @store = @@stores.select{ |s| s[:name] == name }.first then
-			raise "App Store \"#{name}\" Does Not Exist"
+	def store
+		@store
+	end
+	
+	def store=(store_name)
+		store_hash = @@stores.select{ |s| s[:name] == store_name }.first
+		if store_hash.nil?
+			abort("App Store \"#{store_name}\" Does Not Exist")
+		else
+			@store = store_hash
 		end
 	end
 	
 	def fetch_reviews(software_id)
 		reviews = []
-		xml = fetch_xml_for_id(software_id)
-		xml.search('Document > View > ScrollView > VBoxView > View > MatrixView > VBoxView:nth(0) > VBoxView > VBoxView').each do |element|
-			review = parse_review(element)
-			if @translate && ! @store[:language].empty? && @store[:language] != @native_langauge
-				review = translate_review(review)
+		begin
+			xml = fetch_xml(software_id)
+			path = 'Document > View > ScrollView > VBoxView > View > MatrixView > VBoxView:nth(0) > VBoxView > VBoxView'
+			xml.search(path).each do |element|
+				review = parse_review(element)
+				review = translate_review(review) if @should_translate
+				reviews << review
 			end
-			reviews << review
+			reviews
+		rescue => e
+			raise e.message
 		end
-	  reviews
 	end
 	
 	private
 	
-	def fetch_xml_for_id(software_id)
+	def fetch_xml(software_id)
 		raw_xml = %x[curl -s -A "#{USER_AGENT_HEADER}" -H "X-Apple-Store-Front: #{@store[:id]}-1" \
 					"#{APP_STORE_URL}?id=#{software_id}&pageNumber=0&sortOrdering=1&type=#{STORE_TYPE}" \
 					| xmllint --format --recover - 2>/dev/null]
@@ -148,13 +155,13 @@ class AppstoreScrapper
 		xml = Hpricot.XML(raw_xml)
 	end
 	
-	def parse_review(element)
+	def parse_review(xml_element)
 		review = {}
-		strings = (element/:SetFontStyle)
+		strings = (xml_element/:SetFontStyle)
 		meta    = strings[2].inner_text.split(/\n/).map { |x| x.strip }
 		
 		# Note: Translate is sensitive to spaces around punctuation, so we make sure br's connote space.
-		review[:rating]  = element.inner_html.match(/alt="(\d+) star(s?)"/)[1].to_i
+		review[:rating]  = xml_element.inner_html.match(/alt="(\d+) star(s?)"/)[1].to_i
 		review[:author]  = meta[3]
 		review[:version] = meta[7][/Version (.*)/, 1] unless meta[7].nil?
 		review[:date]    = meta[10]
@@ -164,23 +171,17 @@ class AppstoreScrapper
 	end
 	
 	def translate_review(review)
-		begin
-			review[:subject] = translate( :from => @store[:language], :to => NATIVE_LANGUAGE, :text => review[:subject] )
-			review[:body]    = translate( :from => @store[:language], :to => NATIVE_LANGUAGE, :text => review[:body] )
-		rescue => e
-			raise "oops, cannot translate #{store[:name]}/#{store[:language]} => #{NATIVE_LANGUAGE}: #{e.message}" if DEBUG
-		end
-		review
+		review[:subject] = translate( :from => @store[:language], :to => @native_language, :text => review[:subject] )
+		review[:body]    = translate( :from => @store[:language], :to => @native_language, :text => review[:body] )
 	end
 	
 	def translate(opts)
-	  from = opts[:from] == 'auto' ? '' : opts[:from]  # replace 'auto' with blank per Translate API
-	  to   = opts[:to]
-	
-	  result = HTTParty.get(TRANSLATE_URL, :query => { :v => '1.0', :langpair => "#{from}|#{to}", :q => opts[:text] })
-	  raise result['responseDetails'] if result['responseStatus'] != 200
-	  
-	  return result['responseData']['translatedText']
+		from = opts[:from] == 'auto' ? '' : opts[:from] 
+		to   = opts[:to]
+		result = HTTParty.get(TRANSLATE_URL, :query => { :v => '1.0', :langpair => "#{from}|#{to}", :q => opts[:text] })
+		raise result['responseDetails'] if result['responseStatus'] != 200
+		pp result['responseStatus']
+		return result['responseData']['translatedText']
 	end
 
 end
