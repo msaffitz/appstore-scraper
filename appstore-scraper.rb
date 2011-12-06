@@ -1,19 +1,12 @@
 #
-# appstore_reviews
+# appstore_scraper
 #
-#  Fetch iTunes App Store reviews for each application, across all country stores, with translation
-#   -- reads rating, author, subject and review body
 #
-# Notes
-#  Derived from Erica Sadun's scraper: http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html
-#  Apple's XML is purely layout-based, without much semantic relation to reviews, so the CSS paths below
-#   are brittle.
+# Derived from Erica Sadun's scraper: http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html
 #
 # Jeremy Wohl
 #   relevant post: http://igmus.org/2008/09/fetching-app-store-reviews
-#
-# TODO: spider additional review pages
-# TODO: add option for latest version only: &onlyLatestVersion=true
+
 
 require 'rubygems'
 require 'hpricot'
@@ -29,13 +22,13 @@ class AppstoreScrapper
 	end
 
 	USER_AGENT_HEADER = 'iTunes/9.2 (Macintosh; U; Mac OS X 10.6'
-	TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
+	#TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
 	APP_STORE_URL = 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewContentsUserReviews'
 	STORE_TYPE = 'Purple+Software'
-	DEFAULT_NATIVE_LANGUAGE = 'en'
+	#DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :should_translate, :sort_order, :fetch_latest_version_only
+	attr_accessor :native_language, :sort_order, :fetch_latest_version_only #, :should_translate
 
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -119,8 +112,8 @@ class AppstoreScrapper
 	
 	def initialize 
 		@store = DEFAULT_STORE
-		@native_language = DEFAULT_NATIVE_LANGUAGE
-		@should_translate = true
+		#@native_language = DEFAULT_NATIVE_LANGUAGE
+		#@should_translate = true
 		@sort_order = SortOrders::MOST_RECENT
 		@fetch_latest_version_only = false
 	end
@@ -187,7 +180,7 @@ class AppstoreScrapper
 	def translate(opts)
 		from = opts[:from] == 'auto' ? '' : opts[:from] 
 		to   = opts[:to]
-		header = { 'Referer' => 'http://www.griffintechnology.com' }
+		header = { 'Referer' => 'http://www.test.com' }
 		query = { :v => '2.0', :langpair => "#{from}|#{to}", :q => opts[:text] }
 		result = HTTParty.get(TRANSLATE_URL, :headers => header, :query => query)
 		raise result['responseDetails'] if result['responseStatus'] != 200
