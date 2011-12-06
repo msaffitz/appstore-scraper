@@ -35,7 +35,7 @@ class AppstoreScrapper
 	DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :should_translate, :sort_order
+	attr_accessor :native_language, :should_translate, :sort_order, :fetch_latest_version_only
 
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -122,6 +122,7 @@ class AppstoreScrapper
 		@native_language = DEFAULT_NATIVE_LANGUAGE
 		@should_translate = true
 		@sort_order = SortOrders::MOST_RECENT
+		@fetch_latest_version_only = false
 	end
 
 	def store
@@ -157,7 +158,7 @@ class AppstoreScrapper
 	
 	def fetch_xml(software_id)
 		raw_xml = %x[curl -s -A "#{USER_AGENT_HEADER}" -H "X-Apple-Store-Front: #{@store[:id]}-1" \
-					"#{APP_STORE_URL}?id=#{software_id}&pageNumber=0&sortOrdering=#{@sort_order}&type=#{STORE_TYPE}" \
+					"#{APP_STORE_URL}?id=#{software_id}&onlyLatestVersion=#{fetch_latest_version_only}&pageNumber=0&sortOrdering=#{@sort_order}&type=#{STORE_TYPE}" \
 					| xmllint --format --recover - 2>/dev/null]
 		raise 'xml request failed' if $? != 0
 		xml = Hpricot.XML(raw_xml)
