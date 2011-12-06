@@ -188,7 +188,6 @@ class AppstoreScrapper
 		to   = opts[:to]
 		result = HTTParty.get(TRANSLATE_URL, :query => { :v => '1.0', :langpair => "#{from}|#{to}", :q => opts[:text] })
 		raise result['responseDetails'] if result['responseStatus'] != 200
-		pp result['responseStatus']
 		return result['responseData']['translatedText']
 	end
 
