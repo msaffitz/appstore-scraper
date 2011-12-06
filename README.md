@@ -28,8 +28,13 @@ http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296
 		'France',
 	]
 
-	reviews = []
 	scraper = AppstoreScrapper.new
+	scraper.should_translate = false
+	scraper.store = 'France'
+	scraper.native_language = 'en'
+	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_FAVORABLE
+
+	reviews = []
 	apps.each_value do |app|
 		stores.each do |store|
 			scraper.set_store(store)
