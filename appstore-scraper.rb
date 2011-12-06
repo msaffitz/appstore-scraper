@@ -145,7 +145,7 @@ class AppstoreScrapper
 			path = 'Document > View > ScrollView > VBoxView > View > MatrixView > VBoxView:nth(0) > VBoxView > VBoxView'
 			xml.search(path).each do |element|
 				review = parse_review(element)
-				review = translate_review(review) if @should_translate
+				#review = translate_review(review) if @should_translate
 				reviews << review
 			end
 			reviews
@@ -178,7 +178,7 @@ class AppstoreScrapper
 		review[:body]    = strings[3].inner_html.gsub("<br />", "\n").strip
 		review
 	end
-	
+=begin
 	def translate_review(review)
 		review[:subject] = translate( :from => @store[:language], :to => @native_language, :text => review[:subject] )
 		review[:body]    = translate( :from => @store[:language], :to => @native_language, :text => review[:body] )
@@ -187,10 +187,12 @@ class AppstoreScrapper
 	def translate(opts)
 		from = opts[:from] == 'auto' ? '' : opts[:from] 
 		to   = opts[:to]
-		result = HTTParty.get(TRANSLATE_URL, :query => { :v => '1.0', :langpair => "#{from}|#{to}", :q => opts[:text] })
+		header = { 'Referer' => 'http://www.griffintechnology.com' }
+		query = { :v => '2.0', :langpair => "#{from}|#{to}", :q => opts[:text] }
+		result = HTTParty.get(TRANSLATE_URL, :headers => header, :query => query)
 		raise result['responseDetails'] if result['responseStatus'] != 200
 		return result['responseData']['translatedText']
 	end
-
+=end
 end
 
