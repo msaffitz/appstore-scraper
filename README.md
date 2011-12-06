@@ -31,7 +31,6 @@ http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296
 	scraper = AppstoreScrapper.new
 	scraper.should_translate = true
 	scraper.fetch_latest_version_only = true
-	scraper.store = 'France'
 	scraper.native_language = 'en'
 	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_FAVORABLE
 
