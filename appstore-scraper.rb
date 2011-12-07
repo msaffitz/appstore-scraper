@@ -12,7 +12,7 @@ require 'rubygems'
 require 'hpricot'
 require 'httparty'
 
-class AppstoreScrapper
+class AppstoreScraper
 
 	module SortOrders
 		MOST_HELPFUL = 4
@@ -22,13 +22,11 @@ class AppstoreScrapper
 	end
 
 	USER_AGENT_HEADER = 'iTunes/9.2 (Macintosh; U; Mac OS X 10.6'
-	#TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
 	APP_STORE_URL = 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewContentsUserReviews'
 	STORE_TYPE = 'Purple+Software'
-	#DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :sort_order, :fetch_latest_version_only #, :should_translate
+	attr_accessor :native_language, :sort_order, :fetch_latest_version_only
 
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -112,8 +110,6 @@ class AppstoreScrapper
 	
 	def initialize 
 		@store = DEFAULT_STORE
-		#@native_language = DEFAULT_NATIVE_LANGUAGE
-		#@should_translate = true
 		@sort_order = SortOrders::MOST_RECENT
 		@fetch_latest_version_only = false
 	end
@@ -138,7 +134,6 @@ class AppstoreScrapper
 			path = 'Document > View > ScrollView > VBoxView > View > MatrixView > VBoxView:nth(0) > VBoxView > VBoxView'
 			xml.search(path).each do |element|
 				review = parse_review(element)
-				#review = translate_review(review) if @should_translate
 				reviews << review
 			end
 			reviews
@@ -171,21 +166,6 @@ class AppstoreScrapper
 		review[:body]    = strings[3].inner_html.gsub("<br />", "\n").strip
 		review
 	end
-=begin
-	def translate_review(review)
-		review[:subject] = translate( :from => @store[:language], :to => @native_language, :text => review[:subject] )
-		review[:body]    = translate( :from => @store[:language], :to => @native_language, :text => review[:body] )
-	end
-	
-	def translate(opts)
-		from = opts[:from] == 'auto' ? '' : opts[:from] 
-		to   = opts[:to]
-		header = { 'Referer' => 'http://www.test.com' }
-		query = { :v => '2.0', :langpair => "#{from}|#{to}", :q => opts[:text] }
-		result = HTTParty.get(TRANSLATE_URL, :headers => header, :query => query)
-		raise result['responseDetails'] if result['responseStatus'] != 200
-		return result['responseData']['translatedText']
-	end
-=end
+
 end
 
