@@ -1,25 +1,18 @@
 #
-# appstore_reviews
+# appstore_scraper
 #
-#  Fetch iTunes App Store reviews for each application, across all country stores, with translation
-#   -- reads rating, author, subject and review body
 #
-# Notes
-#  Derived from Erica Sadun's scraper: http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html
-#  Apple's XML is purely layout-based, without much semantic relation to reviews, so the CSS paths below
-#   are brittle.
+# Derived from Erica Sadun's scraper: http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html
 #
 # Jeremy Wohl
 #   relevant post: http://igmus.org/2008/09/fetching-app-store-reviews
-#
-# TODO: spider additional review pages
-# TODO: add option for latest version only: &onlyLatestVersion=true
+
 
 require 'rubygems'
 require 'hpricot'
 require 'httparty'
 
-class AppstoreScrapper
+class AppstoreScraper
 
 	module SortOrders
 		MOST_HELPFUL = 4
@@ -29,13 +22,11 @@ class AppstoreScrapper
 	end
 
 	USER_AGENT_HEADER = 'iTunes/9.2 (Macintosh; U; Mac OS X 10.6'
-	TRANSLATE_URL = 'http://ajax.googleapis.com/ajax/services/language/translate?'
 	APP_STORE_URL = 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewContentsUserReviews'
 	STORE_TYPE = 'Purple+Software'
-	DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
-	
-	attr_accessor :native_language, :should_translate, :sort_order, :fetch_latest_version_only, :max_reviews
+
+	attr_accessor :native_language, :sort_order, :fetch_latest_version_only, :max_reviews
 
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -119,8 +110,6 @@ class AppstoreScrapper
 	
 	def initialize 
 		@store = DEFAULT_STORE
-		@native_language = DEFAULT_NATIVE_LANGUAGE
-		@should_translate = true
 		@sort_order = SortOrders::MOST_RECENT
 		@fetch_latest_version_only = false
 		@max_reviews = 1000
@@ -148,7 +137,6 @@ class AppstoreScrapper
 			elements = elements[0..@max_reviews-1] if elements.length > @max_reviews
 			elements.each do |element|
 				review = parse_review(element)
-				review = translate_review(review) if @should_translate
 				reviews << review
 			end
 			reviews
@@ -180,19 +168,6 @@ class AppstoreScrapper
 		review[:subject] = strings[0].inner_text.strip
 		review[:body]    = strings[3].inner_html.gsub("<br />", "\n").strip
 		review
-	end
-	
-	def translate_review(review)
-		review[:subject] = translate( :from => @store[:language], :to => @native_language, :text => review[:subject] )
-		review[:body]    = translate( :from => @store[:language], :to => @native_language, :text => review[:body] )
-	end
-	
-	def translate(opts)
-		from = opts[:from] == 'auto' ? '' : opts[:from] 
-		to   = opts[:to]
-		result = HTTParty.get(TRANSLATE_URL, :query => { :v => '1.0', :langpair => "#{from}|#{to}", :q => opts[:text] })
-		raise result['responseDetails'] if result['responseStatus'] != 200
-		return result['responseData']['translatedText']
 	end
 
 end

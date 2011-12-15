@@ -1,10 +1,6 @@
-This is a class version of Jeremy Wohl's script: ([github.com/jeremywohl/iphone-scripts](https://github.com/jeremywohl/iphone-scripts))
+Fetch iTunes App Store reviews for each application, across all country stores. Reads rating, author, subject and review body. Apple's XML is purely layout-based, without much semantic relation to reviews, so the CSS paths are brittle.
 
-Fetch iTunes App Store reviews for each application, across all country stores, with translation. Reads rating, author, subject and review body. Apple's XML is purely layout-based, without much semantic relation to reviews, so the CSS paths are brittle.
-
-Derived from Erica Sadun's scraper: ([oreilly.com](http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html))
-
-Google's translate API is used for translation. ([Terms of Service](http://code.google.com/apis/language/translate/terms.html))
+Refactored from [Jeremy Wohl's script](https://github.com/jeremywohl/iphone-scripts) -> Derived from [Erica Sadun's scraper](http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html)
 
 required gems: 
 hpricot
@@ -29,9 +25,7 @@ http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296
 	]
 
 	scraper = AppstoreScrapper.new
-	scraper.should_translate = true
 	scraper.fetch_latest_version_only = true
-	scraper.native_language = 'en'
 	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_FAVORABLE
 
 	reviews = []
