@@ -35,7 +35,7 @@ class AppstoreScrapper
 	DEFAULT_NATIVE_LANGUAGE = 'en'
 	DEFAULT_STORE = 'United States'
 	
-	attr_accessor :native_language, :should_translate, :sort_order, :fetch_latest_version_only
+	attr_accessor :native_language, :should_translate, :sort_order, :fetch_latest_version_only, :max_reviews
 
 	@@stores = [
 			{ :name => 'United States',        :id => 143441, :language => 'en'    },
@@ -123,6 +123,7 @@ class AppstoreScrapper
 		@should_translate = true
 		@sort_order = SortOrders::MOST_RECENT
 		@fetch_latest_version_only = false
+		@max_reviews = 1000
 	end
 
 	def store
@@ -143,7 +144,9 @@ class AppstoreScrapper
 		begin
 			xml = fetch_xml(software_id)
 			path = 'Document > View > ScrollView > VBoxView > View > MatrixView > VBoxView:nth(0) > VBoxView > VBoxView'
-			xml.search(path).each do |element|
+			elements = xml.search(path)
+			elements = elements[0..@max_reviews-1] if elements.length > @max_reviews
+			elements.each do |element|
 				review = parse_review(element)
 				review = translate_review(review) if @should_translate
 				reviews << review
