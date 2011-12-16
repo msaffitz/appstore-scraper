@@ -128,7 +128,7 @@ class AppstoreScraper
 		end
 	end
 	
-	def fetch_reviews(software_id)
+	def fetch_reviews(software_id, app_name)
 		reviews = []
 		begin
 			xml = fetch_xml(software_id)
@@ -137,6 +137,7 @@ class AppstoreScraper
 			elements = elements[0..@max_reviews-1] if elements.length > @max_reviews
 			elements.each do |element|
 				review = parse_review(element)
+				review[:app] = app_name
 				reviews << review
 			end
 			reviews
