@@ -10,7 +10,7 @@ httparty
 
 You can find an app's id at the end of its App Store url:
 
-http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296271871</font>?mt=8
+http:// itunes.apple.com/us/app/italk-recorder-premium/id296271871?mt=8
 
 
 	require 'appstore-scraper'
@@ -24,9 +24,10 @@ http:// itunes.apple.com/us/app/italk-recorder-premium/id<font color="green">296
 		'France',
 	]
 
-	scraper = AppstoreScrapper.new
+	scraper = AppstoreScraper.new
 	scraper.fetch_latest_version_only = true
-	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_FAVORABLE
+	scraper.max_reviews = 10
+	scraper.sort_order = AppstoreScrapper::SortOrders::MOST_RECENT
 
 	reviews = []
 	begin
