@@ -1,4 +1,4 @@
-Fetch iTunes App Store reviews for each application, across all country stores. Reads rating, author, subject and review body. Apple's XML is purely layout-based, without much semantic relation to reviews, so the CSS paths are brittle.
+Fetch iTunes App Store reviews for each application, across all country stores. Reads rating, author, subject and review body.
 
 Refactored from [Jeremy Wohl's script](https://github.com/jeremywohl/iphone-scripts) -> Derived from [Erica Sadun's scraper](http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html)
 
