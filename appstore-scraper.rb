@@ -1,13 +1,3 @@
-#
-# appstore_scraper
-#
-#
-# Derived from Erica Sadun's scraper: http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html
-#
-# Jeremy Wohl
-#   relevant post: http://igmus.org/2008/09/fetching-app-store-reviews
-
-
 require 'rubygems'
 require 'hpricot'
 require 'httparty'
