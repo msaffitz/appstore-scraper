@@ -8,7 +8,7 @@ httparty
 
 # Example
 
-You can find an app's id at the end of its App Store url:
+You can find an app's ID in iTunes Connect, or at the end of its App Store url:
 
 http:// itunes.apple.com/us/app/italk-recorder-premium/id296271871?mt=8
 
