@@ -151,7 +151,6 @@ class AppstoreScraper
 		strings = (xml_element/:SetFontStyle)
 		meta    = strings[2].inner_text.split(/\n/).map { |x| x.strip }
 		
-		# Note: Translate is sensitive to spaces around punctuation, so we make sure br's connote space.
 		review[:rating]  = xml_element.inner_html.match(/alt="(\d+) star(s?)"/)[1].to_i
 		review[:author]  = meta[3]
 		review[:version] = meta[7][/Version (.*)/, 1] unless meta[7].nil?
