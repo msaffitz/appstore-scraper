@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Appstore-scraper : Scrapes App Store Reviews" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Appstore-scraper</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mark-w/appstore-scraper">Fork Me on GitHub</a>
+
+          <h1 id="project_title">Appstore-scraper</h1>
+          <h2 id="project_tagline">Scrapes App Store Reviews</h2>
+
+          <section id="downloads">
+            <a class="zip_download_link" href="https://github.com/mark-w/appstore-scraper/zipball/master">Download this project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/mark-w/appstore-scraper/tarball/master">Download this project as a tar.gz file</a>
+          </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Fetches iTunes App Store reviews for each application, across all country stores. Reads rating, author, subject and review body.</p>
+
+<p>Refactored from <a href="https://github.com/jeremywohl/iphone-scripts">Jeremy Wohl's script</a> -&gt; Derived from <a href="http://blogs.oreilly.com/iphone/2008/08/scraping-appstore-reviews.html">Erica Sadun's scraper</a></p>
+
+<p>required gems: 
+hpricot
+httparty</p>
+
+<h1>Example</h1>
+
+<p>You can find an app's ID in iTunes Connect, or at the end of its App Store url:</p>
+
+<p>http:// itunes.apple.com/us/app/italk-recorder-premium/id296271871?mt=8</p>
+
+<pre><code>require 'appstore-scraper'
+
+apps = {
+    'iTalk' =&gt; 296271871,
+}
+
+stores = [
+    'United States',
+    'France',
+            'Japan'
+]
+
+scraper = AppstoreScraper.new
+scraper.fetch_latest_version_only = true
+scraper.max_reviews = 10
+scraper.sort_order = AppstoreScrapper::SortOrders::MOST_RECENT
+
+reviews = []
+begin
+    apps.each_value do |app|
+        stores.each do |store|
+            scraper.set_store(store)
+            reviews &lt;&lt; scraper.fetch_reviews(app)
+        end
+    end
+rescue =&gt; e
+    puts e.message
+end
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Appstore-scraper maintained by <a href="https://github.com/mark-w">mark-w</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
